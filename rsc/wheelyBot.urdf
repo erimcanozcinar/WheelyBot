@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="wheelyBot">
+  <material name="black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+  <material name="blue">
+    <color rgba="0.0 0.0 0.8 1.0"/>
+  </material>
+  <material name="green">
+    <color rgba="0.0 0.8 0.0 1.0"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="silver">
+    <color rgba="0.913725490196 0.913725490196 0.847058823529 1.0"/>
+  </material>
+  <material name="orange">
+    <color rgba="1.0 0.423529411765 0.0392156862745 1.0"/>
+  </material>
+  <material name="brown">
+    <color rgba="0.870588235294 0.811764705882 0.764705882353 1.0"/>
+  </material>
+  <material name="red">
+    <color rgba="0.8 0.0 0.0 1.0"/>
+  </material>
+  <material name="white">
+    <color rgba="1.0 1.0 1.0 1.0"/>
+  </material>
+
+  <link name="torso">
+	 <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/> 
+     <mass value="5"/>
+     <inertia ixx="0.05871"  ixy="0"  ixz="0" iyy="0.05208" iyz="0" izz="0.05615" />
+    </inertial>
+    <visual>
+     <origin xyz="0 0 0" rpy="0 0 0" />
+     <geometry>
+       <box size="0.250 0.280 0.250"/>
+     </geometry>
+     <material name="blue"/>
+    </visual>
+    <collision>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <geometry>
+       <box size="0.250 0.280 0.250"/>
+     </geometry>
+    </collision> 
+  </link>
+
+
+  <link name="Thigh_L">
+	  <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <mass value="0.4"/>
+     <inertia ixx="0.0020967"  ixy="0"  ixz="0" iyy="0.0.0022033" iyz="0" izz="0.00013333" />
+    </inertial>
+	  <visual>
+     <origin xyz="0 0 -0.125" rpy="0 0 0" />
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+     <material name="orange"/>
+    </visual>
+	  <collision>
+     <origin xyz="0 0 -0.125" rpy="0 0 0"/>
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+    </collision>
+  </link>
+
+  <link name="Shank_L">
+	  <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <mass value="0.4"/>
+     <inertia ixx="0.0020967"  ixy="0"  ixz="0" iyy="0.0.0022033" iyz="0" izz="0.00013333" />
+    </inertial>
+	  <visual>
+     <origin xyz="0 0 -0.125" rpy="0 0 0" />
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+     <material name="orange"/>
+    </visual>
+	  <collision>
+     <origin xyz="0 0 -0.125" rpy="0 0 0"/>
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+    </collision>
+  </link>
+
+  <link name="Wheel_L">
+	  <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <mass value="0.530"/>
+     <inertia ixx="0.001"  ixy="0"  ixz="0" iyy="0.0007731" iyz="0" izz="0.0007731" />
+    </inertial>
+	  <visual>
+     <origin xyz="0 0 0" rpy="1.57079632679 0 0" />
+     <geometry>
+       <cylinder radius="0.15" length="0.025"/>
+     </geometry>
+     <material name="orange"/>
+    </visual>
+	  <collision>
+     <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
+     <geometry>
+       <cylinder radius="0.15" length="0.025"/>
+     </geometry>
+    </collision>
+  </link>
+
+
+
+
+
+
+  <link name="Thigh_R">
+	  <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <mass value="0.4"/>
+     <inertia ixx="0.0020967"  ixy="0"  ixz="0" iyy="0.0.0022033" iyz="0" izz="0.00013333" />
+    </inertial>
+	  <visual>
+     <origin xyz="0 0 -0.125" rpy="0 0 0" />
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+     <material name="orange"/>
+    </visual>
+	  <collision>
+     <origin xyz="0 0 -0.125" rpy="0 0 0"/>
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+    </collision>
+  </link>
+
+  <link name="Shank_R">
+	  <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <mass value="0.4"/>
+     <inertia ixx="0.0020967"  ixy="0"  ixz="0" iyy="0.0.0022033" iyz="0" izz="0.00013333" />
+    </inertial>
+	  <visual>
+     <origin xyz="0 0 -0.125" rpy="0 0 0" />
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+     <material name="orange"/>
+    </visual>
+	  <collision>
+     <origin xyz="0 0 -0.125" rpy="0 0 0"/>
+     <geometry>
+       <box size="0.06 0.020 0.250"/>
+     </geometry>
+    </collision>
+  </link>
+
+  <link name="Wheel_R">
+	  <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <mass value="0.530"/>
+     <inertia ixx="0.001"  ixy="0"  ixz="0" iyy="0.0007731" iyz="0" izz="0.0007731" />
+    </inertial>
+	  <visual>
+     <origin xyz="0 0 0" rpy="1.57079632679 0 0" />
+     <geometry>
+       <cylinder radius="0.15" length="0.025"/>
+     </geometry>
+     <material name="orange"/>
+    </visual>
+	  <collision>
+     <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
+     <geometry>
+       <cylinder radius="0.15" length="0.025"/>
+     </geometry>
+    </collision>
+  </link>
+
+  <!-- Joints -->
+  <joint name="Hip_FE_L" type="revolute">
+    <parent link="torso"/>
+    <child link="Thigh_L"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0.175 0" rpy="0 0 0" />
+  </joint>
+
+  <joint name="Knee_FE_L" type="revolute">
+    <parent link="Thigh_L"/>
+    <child link="Shank_L"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0.02 -0.250" rpy="0 0 0" />
+  </joint>
+
+  <joint name="Wheel_Joint_L" type="continuous">
+    <parent link="Shank_L"/>
+    <child link="Wheel_L"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0.0225 -0.250" rpy="0 0 0" />
+  </joint>
+  
+
+
+ 
+
+  <joint name="Hip_FE_R" type="revolute">
+    <parent link="torso"/>
+    <child link="Thigh_R"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 -0.175 0" rpy="0 0 0" />
+  </joint>
+
+  <joint name="Knee_FE_R" type="revolute">
+    <parent link="Thigh_R"/>
+    <child link="Shank_R"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 -0.02 -0.250" rpy="0 0 0" />
+  </joint>
+
+  <joint name="Wheel_Joint_R" type="continuous">
+    <parent link="Shank_R"/>
+    <child link="Wheel_R"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 -0.0225 -0.250" rpy="0 0 0" />
+  </joint>
+
+</robot>
