@@ -71,7 +71,7 @@ void simulation::simulate()
 
 
 
-        /* #region: JOINT PD CONTROLLER */
+        /* #region: CONTROLLERS */
         torsoVelController.linearVelController(0, wheelyBotRobot.robot_Vel, dt);
         torsoStabilizer.torsoStabilization(torsoVelController.ref_pitch, imuRot, dt);
         wheelyBotRobot.jointPosController(qJoint_enc, dt);
