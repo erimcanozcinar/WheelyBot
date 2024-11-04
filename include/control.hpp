@@ -5,11 +5,8 @@
 #include "Eigen/Dense"
 #include "math.hpp"
 
-class jointLevelControllers{
+class jointLevelControllers : virtual protected mathOperations{
     private:
-        mathOperations mathOp;
-
-
         Eigen::Matrix4d Kp, Kd;
         Eigen::Vector4d error, pre_error, derror;
 
@@ -26,35 +23,16 @@ class jointLevelControllers{
 
 };
 
-class stabilizationController{
+class modelBasedControllers : virtual protected mathOperations{
     private:
-        mathOperations mathOp;
-
-        double Pitch, pre_Pitch, dPitch;
-        double pre_ref_Pitch, ref_dPitch;
+        Eigen::MatrixXd lqrGains{2,6};
     public:
-        stabilizationController();
+        modelBasedControllers();
 
-        double des_dqWheels;
-        void torsoStabilization(double ref_Pitch, Eigen::Vector3d torsoEulerAngles, double dt);
-};
-
-class torsoVelControllers{
-    private:
-        mathOperations mathOp;
-
-        double errorV, pre_errorV, derrorV;
-        double errorW, pre_errorW, derrorW;
-
-    protected:
-    public:
-        torsoVelControllers();
-
-        double ref_pitch;
-        void linearVelController(double ref_Vtorso, double meas_Vtorso, double dT);
-
-        double ref_wheel_angVel;
-        void angularVelController(double ref_Wtorso, double meas_Wtorso, double dT);
+        Eigen::MatrixXd matA, matB, matQ, matR, matP;
+        Eigen::Vector2d lqrTau;
+        Eigen::VectorXd lqrStates{6}, lqrStates_des{6};
+        void LQR();
 };
 
 #endif

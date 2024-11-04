@@ -1,8 +1,5 @@
 #include "robot.hpp"
 
-mathOperations mathOp;
-jointLevelControllers jointController;
-
 robotLeg::robotLeg(char leg)
 {
     switch (leg)
@@ -29,9 +26,9 @@ void robotLeg::solveLegFK(Eigen::Matrix3d rootOrient, Eigen::Vector2d jointAngle
     d2w = legIndex*d2w;
 
     T01 << rootOrient, comPos, 0, 0, 0, 1;
-    T12 << mathOp.RotatePitch(jointAngles(0)), Eigen::Vector3d {L+l0x, W+l0y, H}, 0, 0, 0, 1;
-    T23 << mathOp.RotatePitch(jointAngles(1)), Eigen::Vector3d {0, d12, l1}, 0, 0, 0, 1;
-    T34 << mathOp.RotatePitch(jointAngles(0)+jointAngles(1)).transpose(), Eigen::Vector3d {0, d2w, l2}, 0, 0, 0, 1;
+    T12 << RotatePitch(jointAngles(0)), Eigen::Vector3d {L+l0x, W+l0y, H}, 0, 0, 0, 1;
+    T23 << RotatePitch(jointAngles(1)), Eigen::Vector3d {0, d12, l1}, 0, 0, 0, 1;
+    T34 << RotatePitch(jointAngles(0)+jointAngles(1)).transpose(), Eigen::Vector3d {0, d2w, l2}, 0, 0, 0, 1;
     T45 << Eigen::Matrix3d::Identity(), Eigen::Vector3d {0, 0, rw}, 0, 0, 0, 1;
 
     T05 = T01*T12*T23*T34*T45;
@@ -54,7 +51,7 @@ void robotLeg::solveLegIK(Eigen::Matrix3d rootOrient, Eigen::Vector3d footPos, E
     double Sinq2 = -sqrt(1-pow(Cosq2,2));
     double q2 = atan2(Sinq2,Cosq2);
 
-    double A = l1*sin(q2);
+    double A = l2*sin(q2);
     double B = l1 + l2*cos(q2);
 
     double Cosq1 = (A*(Rhf(0)-l0x) + B*(Rhf(2) - rw))/(pow(A,2) + pow(B,2));
@@ -64,56 +61,116 @@ void robotLeg::solveLegIK(Eigen::Matrix3d rootOrient, Eigen::Vector3d footPos, E
     qJoint << q1, q2;
 }
 
-void robotLeg::solveWheelIK(double Vrobot, double Wrobot)
+void robotLeg::solveWheelIK(double Vrobot, double Wrobot, double Wy)
 {
     double Dw = 2*(l0y + d12 + d2w);
-    wheelAngVel = (Vrobot - legIndex*0.5*Dw*Wrobot)/rw;
+    wheelAngVel = (Vrobot - legIndex*0.5*Dw*Wrobot - rw*Wy)/rw;
+}
+
+void robotLeg::legJacobian(Eigen::Vector2d jointPos)
+{
+    legJacobianMat << l2*cos(jointPos(0) + jointPos(1)) + l1*cos(jointPos(0) + 2*jointPos(1)), l2*cos(jointPos(0) + jointPos(1)) + 2*l1*cos(jointPos(0) + 2*jointPos(1)), 2, 2;
 }
 
 
-
-void twoLeggedWheeledRobot::solveFullBodyFK(Eigen::Vector3d comPos, Eigen::Matrix3d rootOrient, Eigen::Vector2d leftJointAngles, Eigen::Vector2d rightJointAngles)
+void twoLeggedWheeledRobot::solveFullBodyFK(Eigen::Vector3d comPos, Eigen::Matrix3d rootOrient, Eigen::Vector2d leftJointAngles, Eigen::Vector2d rightJointAngles, Eigen::Vector2d wheels_AngVel)
 {
+    double Dw = 2*(l0y + d12 + d2w);
+    Eigen::Vector2d vMat, wMat;
+
     leftLeg.solveLegFK(rootOrient, leftJointAngles, comPos);
     rightLeg.solveLegFK(rootOrient, rightJointAngles, comPos);
 
     leftLegContactPos = leftLeg.contactPos;
     rightLegContactPos = rightLeg.contactPos;
+    
+    vMat << 1, 1;
+    wMat << 1, -1;
+    robot_Vel = 0.5*rw*vMat.transpose()*wheels_AngVel;
+    robot_AngVel = (rw/Dw)*wMat.transpose()*wheels_AngVel;
 }
 
-void twoLeggedWheeledRobot::solveFullBodyIK(Eigen::Vector3d comPos, Eigen::Matrix3d rootOrient, Eigen::Vector3d leftFootPos, Eigen::Vector3d rightFootPos)
+void twoLeggedWheeledRobot::solveFullBodyIK(Eigen::Vector3d comPos, Eigen::Matrix3d rootOrient, double Vrobot, double Wrobot, double Wy, Eigen::Vector3d leftFootPos, Eigen::Vector3d rightFootPos)
 {
     leftLeg.solveLegIK(rootOrient, leftFootPos, comPos);
     rightLeg.solveLegIK(rootOrient, rightFootPos, comPos);
     
     jointPos << leftLeg.qJoint, rightLeg.qJoint;
-}
+    wheelJointPos << -(leftLeg.qJoint(0)+leftLeg.qJoint(1)), -(rightLeg.qJoint(0)+rightLeg.qJoint(1));
 
-void twoLeggedWheeledRobot::solveFullBodyWheelFK(Eigen::Vector2d wheels_AngVel)
-{
-    double Dw = 2*(l0y + d12 + d2w);
-    Eigen::Vector2d vMat, wMat;
-    vMat << 1, 1;
-    wMat << 1, -1;
-    robot_Vel = 0.5*rw*vMat.transpose()*wheels_AngVel;
-    robot_AngVel = (Dw/rw)*wMat.transpose()*wheels_AngVel;
-}
-
-void twoLeggedWheeledRobot::solveFullBodyWheelIK(double Vrobot, double Wrobot)
-{
-    leftLeg.solveWheelIK(Vrobot, Wrobot);
-    rightLeg.solveWheelIK(Vrobot, Wrobot);
+    leftLeg.solveWheelIK(Vrobot, Wrobot, Wy);
+    rightLeg.solveWheelIK(Vrobot, Wrobot, Wy);
     wheelsAngVel << leftLeg.wheelAngVel, rightLeg.wheelAngVel;
+}
+
+void twoLeggedWheeledRobot::unwrapIMU(Eigen::Vector3d eulerIMU, Eigen::Vector3d pre_eulerIMU, double dt)
+{
+    double imu_unwraped_roll = funcUnwrap(eulerIMU(0), pre_eulerIMU(0));
+    double imu_unwraped_pitch = eulerIMU(1);
+    double imu_unwraped_yaw = funcUnwrap(eulerIMU(2), pre_eulerIMU(2));
+    unwrapedIMU << imu_unwraped_roll, imu_unwraped_pitch, imu_unwraped_yaw;
+
+    d_unwrapedIMU << Numdiff(unwrapedIMU(0), pre_unwrapedIMU(0), dt),
+                     Numdiff(unwrapedIMU(1), pre_unwrapedIMU(1), dt),
+                     Numdiff(unwrapedIMU(2), pre_unwrapedIMU(2), dt);
+    pre_unwrapedIMU = unwrapedIMU;
 }
 
 void twoLeggedWheeledRobot::jointPosController(Eigen::Vector4d measruedJointPos, double dT)
 {
-    jointController.jointLevelPD(jointPos, measruedJointPos, dT);
-    tauJointPD = jointController.Tau_pd;
+    jointLevelPD(jointPos, measruedJointPos, dT);
+    tauJointPD = Tau_pd;
 }
 
-void twoLeggedWheeledRobot::wheelVelController(Eigen::Vector2d des_dqWheel, Eigen::Vector2d meas_qWheel, Eigen::Vector2d meas_dqWheel, double dT)
+void twoLeggedWheeledRobot::fullBodyJacobian(Eigen::Vector4d meas_jointPos)
 {
-    jointController.wheelsPI(des_dqWheel, meas_qWheel, meas_dqWheel, dT);
-    tauWheels << jointController.tauWheel_L, jointController.tauWheel_R;
+    Eigen::Vector2d leftLegJointPos, rightLegJointPos;
+    leftLegJointPos << meas_jointPos(0), meas_jointPos(1);
+    rightLegJointPos << meas_jointPos(2), meas_jointPos(3);
+    leftLeg.legJacobian(leftLegJointPos);
+    rightLeg.legJacobian(rightLegJointPos);
+    jacobianMat << leftLeg.legJacobianMat.transpose(), rightLeg.legJacobianMat.transpose();
+
+}
+
+void twoLeggedWheeledRobot::stabilizingController()
+{
+    lqrStates = stateVec;
+    lqrStates_des = stateVec_des;
+    LQR();
+    lqrTauWheels = lqrTau;
+}
+
+void twoLeggedWheeledRobot::wheelAngVelController(Eigen::Vector2d ref_wheelTorq, Eigen::Vector2d wheelsPos, Eigen::Vector2d wheelsVel, double dt)
+{
+    double Dw = 2*(l0y + d12 + d2w);
+    mobileMassMat << 1/MASS, 0, 0, 1/0.05615;
+    wheelJacInv << 1/rw,  Dw/(2*rw), 1/rw, -Dw/(2*rw);
+    ref_wheelVel = wheelJacInv*mobileMassMat*wheelJacInv.transpose()*ref_wheelTorq;
+
+    wheelsPI(ref_wheelVel, wheelsPos, wheelsVel, dt);
+    wheelTorques << tauWheel_L, tauWheel_R;
+}
+
+
+stateEstimators::stateEstimators()
+{
+    robotPosition = 0.0;
+    prev_robotPosition = 0.0;
+    prev_robotVelocity = 0.0;
+    prev_robotVelocityFilt = 0.0;
+};
+
+void stateEstimators::comStates(Eigen::Vector2d wheelsAngVel, Eigen::Vector2d qwheels, double dt)
+{
+    solveFullBodyFK(Eigen::Vector3d::Zero(),Eigen::Matrix3d::Identity(),Eigen::Vector2d::Zero(),Eigen::Vector2d::Zero(),wheelsAngVel);
+    robotVelocity = robot_Vel;
+    robotAngularVelocity = robot_AngVel;
+
+    robotVelocityFilt = LowPassFilter(robotVelocity, prev_robotVelocityFilt, 2*M_PI*50, dt);
+    prev_robotVelocityFilt = robotVelocityFilt;
+    
+    robotPosition = numIntegral(robotVelocity, prev_robotVelocity, prev_robotPosition, dt);
+    prev_robotVelocity = robotVelocity;
+    prev_robotPosition = robotPosition;
 }
