@@ -16,7 +16,7 @@ class robotLeg : virtual protected mathOperations{
  
         // link lengths
         double l0x = 0.00000;
-        double l0y = 0.00000;
+        double l0y = 0.03500;
         double l1 = -0.23728; 
         double l2 = -0.25400;
         double rw = -0.25400;
@@ -50,13 +50,14 @@ class twoLeggedWheeledRobot : protected jointLevelControllers, protected modelBa
 
         Eigen::Vector3d pre_unwrapedIMU;
     protected:
-        double l0y = 0.0000;
+        double W = 0.14;
+        double l0y = 0.0350;
         double d12 = 0.0200;
         double d2w = 0.0225;    
         double rw = 0.25400;
 
     public:
-        twoLeggedWheeledRobot(): leftLeg('l'), rightLeg('r') {}
+        twoLeggedWheeledRobot();
 
         Eigen::Vector3d leftLegContactPos, rightLegContactPos;
         double robot_Vel, robot_AngVel;
@@ -82,8 +83,9 @@ class twoLeggedWheeledRobot : protected jointLevelControllers, protected modelBa
         void stabilizingController();
 
         Eigen::Matrix2d wheelJacInv;
-        Eigen::Vector2d wheelTorques, ref_wheelVel;
-        Eigen::Matrix2d mobileMassMat;
+        Eigen::Vector2d wheelTorques, ref_wheelVel, ref_wheelAcc;
+        Eigen::Vector2d prevRef_wheelAcc, prevRef_wheelVel;
+        Eigen::Matrix2d mobileMassMatInv;
         void wheelAngVelController(Eigen::Vector2d wheelTorq, Eigen::Vector2d wheelPos, Eigen::Vector2d wheelVel, double dt);
         
 };

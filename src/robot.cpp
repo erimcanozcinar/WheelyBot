@@ -63,7 +63,7 @@ void robotLeg::solveLegIK(Eigen::Matrix3d rootOrient, Eigen::Vector3d footPos, E
 
 void robotLeg::solveWheelIK(double Vrobot, double Wrobot, double Wy)
 {
-    double Dw = 2*(l0y + d12 + d2w);
+    double Dw = 2*(W + l0y + d12 + d2w);
     wheelAngVel = (Vrobot - legIndex*0.5*Dw*Wrobot - rw*Wy)/rw;
 }
 
@@ -73,9 +73,15 @@ void robotLeg::legJacobian(Eigen::Vector2d jointPos)
 }
 
 
+twoLeggedWheeledRobot::twoLeggedWheeledRobot() : leftLeg('l'), rightLeg('r')
+{
+    prevRef_wheelVel.setZero();
+    prevRef_wheelAcc.setZero();
+}
+
 void twoLeggedWheeledRobot::solveFullBodyFK(Eigen::Vector3d comPos, Eigen::Matrix3d rootOrient, Eigen::Vector2d leftJointAngles, Eigen::Vector2d rightJointAngles, Eigen::Vector2d wheels_AngVel)
 {
-    double Dw = 2*(l0y + d12 + d2w);
+    double Dw = 2*(W + l0y + d12 + d2w);
     Eigen::Vector2d vMat, wMat;
 
     leftLeg.solveLegFK(rootOrient, leftJointAngles, comPos);
@@ -143,10 +149,16 @@ void twoLeggedWheeledRobot::stabilizingController()
 
 void twoLeggedWheeledRobot::wheelAngVelController(Eigen::Vector2d ref_wheelTorq, Eigen::Vector2d wheelsPos, Eigen::Vector2d wheelsVel, double dt)
 {
-    double Dw = 2*(l0y + d12 + d2w);
-    mobileMassMat << 1/MASS, 0, 0, 1/0.05615;
+    double Dw = 2*(W + l0y + d12 + d2w);
+    mobileMassMatInv << 1/MASS, 0, 0, 1/0.05615;
     wheelJacInv << 1/rw,  Dw/(2*rw), 1/rw, -Dw/(2*rw);
-    ref_wheelVel = wheelJacInv*mobileMassMat*wheelJacInv.transpose()*ref_wheelTorq;
+    ref_wheelAcc = wheelJacInv*mobileMassMatInv*wheelJacInv.transpose()*ref_wheelTorq;
+    for(int i=0; i<2; i++)
+    {
+        ref_wheelVel(i) = numIntegral(ref_wheelAcc(i), prevRef_wheelAcc(i), prevRef_wheelVel(i), dt);
+    }
+    prevRef_wheelVel = ref_wheelVel;
+    prevRef_wheelAcc = ref_wheelAcc;
 
     wheelsPI(ref_wheelVel, wheelsPos, wheelsVel, dt);
     wheelTorques << tauWheel_L, tauWheel_R;

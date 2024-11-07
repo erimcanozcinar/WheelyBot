@@ -19,7 +19,7 @@ class simulation : virtual protected mathOperations{
         twoLeggedWheeledRobot wheelyBotRobot;
         stateEstimators torsoEstimator;
         // mathOperations mathOp;
-        trajectoryGeneration trajGen;     
+        trajectoryGeneration trajGen, turnTraj;     
 
         Eigen::Vector3d Pcom, torsoRot, Pcom_offset, comPos, comVel;
         Eigen::Vector3d Pf_L, Pf_R;
@@ -36,6 +36,7 @@ class simulation : virtual protected mathOperations{
         Eigen::VectorXd commandTau ;
 
         double tP, pre_tP, pre_tVel;
+        double trajTurn, dtrajTurn;
     
     public:
         simulation();

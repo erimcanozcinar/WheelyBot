@@ -15,15 +15,15 @@ jointLevelControllers::jointLevelControllers()
 void jointLevelControllers::jointLevelPD(Eigen::Vector4d ref_qJoint, Eigen::Vector4d measured_qJoint, double dT)
 {
 
-    Kp << 100, 0, 0, 0,
-          0, 100, 0, 0,
-          0, 0, 100, 0,
-          0, 0, 0, 100;
+    Kp << 300, 0, 0, 0,
+          0, 300, 0, 0,
+          0, 0, 300, 0,
+          0, 0, 0, 300;
 
-    Kd << 10, 0, 0, 0,
-          0, 10, 0, 0,
-          0, 0, 10, 0,
-          0, 0, 0, 10;
+    Kd << 30, 0, 0, 0,
+          0, 30, 0, 0,
+          0, 0, 30, 0,
+          0, 0, 0, 30;
 
 
     error = ref_qJoint - measured_qJoint;
@@ -41,13 +41,13 @@ void jointLevelControllers::wheelsPI(Eigen::Vector2d ref_dqWheel, Eigen::Vector2
 
     for(int i=0; i<2; i++)
     {
-        ref_qWheel(i) = numIntegral(ref_dqWheel(i), pre_ref_dqWheel(i), pre_ref_qWheel(i,1), dT);
+        ref_qWheel(i) = numIntegral(ref_dqWheel(i), pre_ref_dqWheel(i), pre_ref_qWheel(i), dT);
     }
     pre_ref_dqWheel = ref_dqWheel;
     pre_ref_qWheel = ref_qWheel;
 
-    tauWheel_L = 0.01*(ref_dqWheel(0) - dqWheel(0)) + 0.001*(ref_qWheel(0) - qWheel(0));
-    tauWheel_R = 0.01*(ref_dqWheel(1) - dqWheel(1)) + 0.001*(ref_qWheel(1) - qWheel(1));
+    tauWheel_L = 0.5*(ref_dqWheel(0) - dqWheel(0)) + 0.05*(ref_qWheel(0) - qWheel(0));
+    tauWheel_R = 0.5*(ref_dqWheel(1) - dqWheel(1)) + 0.05*(ref_qWheel(1) - qWheel(1));
 }
 
 
@@ -63,8 +63,11 @@ modelBasedControllers::modelBasedControllers()
     // lqrGains << -62.1112, -15.8114, -7.0711, -13.0206, -14.3455, -3.1931,
     //             -62.1112, -15.8114,  7.0711, -13.0206, -14.3455,  3.1931;
 
-    lqrGains << -6.7142, -1.5811, -0.7071, -1.9659, -1.5496, -0.1867,
-                -6.7142, -1.5811,  0.7071, -1.9659, -1.5496,  0.1867;
+    // lqrGains << -6.7142, -1.5811, -0.7071, -1.9659, -1.5496, -0.1867,
+    //             -6.7142, -1.5811,  0.7071, -1.9659, -1.5496,  0.1867;
+
+    lqrGains << -190.1015, -22.3607, -7.0711, -50.3309, -27.0562, -10.1784,
+                -190.1015, -22.3607,  7.0711, -50.3309, -27.0562,  10.1784;
 
     matA.resize(6,6); matB.resize(6,2); matQ.resize(6,6); matR.resize(2,2); 
 
@@ -101,6 +104,6 @@ void modelBasedControllers::LQR()
     // std::cout << matR.inverse()*matB.transpose()*matP << std::endl;
     // std::cout << "-----------------------------------------------------------------------------" << std::endl;
     // lqrGains = matR.inverse()*matB.transpose()*matP;
-    lqrTau = 1e3*lqrGains*(lqrStates_des - lqrStates);
+    lqrTau = lqrGains*(lqrStates_des - lqrStates);
 }
 
